@@ -36,20 +36,8 @@ if args.use_cuda:
 print ("Using CUDA: ", args.use_cuda, "- args.device: ", args.device)
 
 models_to_train = {
-    'GCN Convolution (tx)': models.GCNConvolution(args, data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
-    'GCN Convolution (tx+agg)': models.GCNConvolution(args, data.num_features, args.hidden_units).to(args.device),
-    'GAT Convolution (tx)': models.GATConvolution(args, data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
-    'GAT Convolution (tx+agg)': models.GATConvolution(args, data.num_features, args.hidden_units).to(args.device),
-    'SAGE Convolution (tx)': models.SAGEConvolution(args, data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
-    'SAGE Convolution (tx+agg)': models.SAGEConvolution(args, data.num_features, args.hidden_units).to(args.device),
-    'Chebyshev Convolution (tx)': models.ChebyshevConvolution(args, [1, 2], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
-    'Chebyshev Convolution (tx+agg)': models.ChebyshevConvolution(args, [1, 2], data.num_features, args.hidden_units).to(args.device),
-    'GATv2 Convolution (tx)': models.GATv2Convolution(args, data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
-    'GATv2 Convolution (tx+agg)': models.GATv2Convolution(args, data.num_features, args.hidden_units).to(args.device)
-
-    #'Custom GAT': GAT(num_of_layers=3, num_heads_per_layer=[1, 4, 1],
-    #                  num_features_per_layer=[args.num_features, args['hidden_units'],
-    #                  args['hidden_units']//2, args['num_classes']], device=args.device).to(args.device)
+    'Chebyshev Convolution (tx)': models.ChebyshevConvolution(args, [1, 2, 3, 4], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
+    'Chebyshev Convolution (tx+agg)': models.ChebyshevConvolution(args, [1, 2, 3, 4], data.num_features, args.hidden_units).to(args.device),
 }
 
 compare_illicit = pd.DataFrame(columns=['model','Precision','Recall', 'F1', 'F1 Micro AVG'])
@@ -93,7 +81,7 @@ for i in range(0, len(model_list), 2):
     print('-'*50)
     
 
-compare_illicit.to_csv(os.path.join('.\output', 'metrics.csv'), index=False)
+compare_illicit.to_csv(os.path.join('.\output', 'metrics_MultiStepLR.csv'), index=False)
 print('Results saved to metrics.csv')
 
 u.plot_results(compare_illicit)

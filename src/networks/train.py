@@ -19,6 +19,7 @@ def train(args, model, data):
 
     optimizer = Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
+    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30, 60, 90, 120], gamma=0.1)
     epochs = args['epochs']
     model.train()
 
