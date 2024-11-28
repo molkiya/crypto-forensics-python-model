@@ -44,7 +44,7 @@ print('Shape of edges', df_edges.shape)
 print('Shape of features', df_features.shape)
 
 group_class = df_classes.groupby('class').count()
-plt.barh(['Unknown', 'Ilicit', 'Licit'], group_class['txId'].values, color=['orange', 'r', 'g'])
+plt.barh(['Неизвестные', 'Нелегальные', 'Легальные'], group_class['txId'].values, color=['orange', 'r', 'g'])
 plt.show()
 
 group_feature = df_features.groupby('Time step').count()
@@ -77,22 +77,46 @@ p3 = plt.bar(class1['Time step'], class1['count'], color='r',
 plt.xlabel('Time step')
 plt.show()
 
-ilicit_ids = df_class_feature.loc[(df_class_feature['Time step'] == 20) & (df_class_feature['class'] == '1'), 'txId']
-ilicit_edges = df_edges.loc[df_edges['txId1'].isin(ilicit_ids)]
+# Filter illicit transactions for Time Step 20
+illicit_ids = df_class_feature.loc[(df_class_feature['Time step'] == 20) & (df_class_feature['class'] == '1'), 'txId']
+illicit_edges = df_edges.loc[df_edges['txId1'].isin(illicit_ids)]
 
-graph = nx.from_pandas_edgelist(ilicit_edges, source = 'txId1', target = 'txId2',
-                                 create_using = nx.DiGraph())
-pos = nx.spring_layout(graph)
-nx.draw(graph, with_labels=False, pos=pos)
+# Create directed graph
+graph_illicit = nx.from_pandas_edgelist(illicit_edges, source='txId1', target='txId2', create_using=nx.DiGraph())
+
+# Add node and edge details
+pos_illicit = nx.spring_layout(graph_illicit)
+plt.figure(figsize=(12, 8))
+nx.draw(graph_illicit, pos=pos_illicit, with_labels=True, node_size=100, node_color='red', edge_color='blue', alpha=0.7)
+plt.title("Illicit Transactions - Time Step 20")
 plt.show()
 
+# Filter licit transactions for Time Step 20
 licit_ids = df_class_feature.loc[(df_class_feature['Time step'] == 20) & (df_class_feature['class'] == '2'), 'txId']
 licit_edges = df_edges.loc[df_edges['txId1'].isin(licit_ids)]
 
-graph = nx.from_pandas_edgelist(licit_edges, source = 'txId1', target = 'txId2',
-                                 create_using = nx.DiGraph())
-pos = nx.spring_layout(graph)
-nx.draw(graph, with_labels=False, pos=pos)
+# Create directed graph
+graph_licit = nx.from_pandas_edgelist(licit_edges, source='txId1', target='txId2', create_using=nx.DiGraph())
+
+# Add node and edge details
+pos_licit = nx.spring_layout(graph_licit)
+plt.figure(figsize=(12, 8))
+nx.draw(graph_licit, pos=pos_licit, with_labels=True, node_size=100, node_color='green', edge_color='orange', alpha=0.7)
+plt.title("Licit Transactions - Time Step 20")
+plt.show()
+
+# Filter illicit transactions for Time Step 37
+bad_ids = df_features.loc[(df_features['time step'] == 37) & (df_features['class'] == '1'), 'id']
+short_edges = df_edgelist.loc[df_edgelist['txId1'].isin(bad_ids)]
+
+# Create directed graph
+graph_bad = nx.from_pandas_edgelist(short_edges, source='txId1', target='txId2', create_using=nx.DiGraph())
+
+# Add node and edge details
+pos_bad = nx.spring_layout(graph_bad)
+plt.figure(figsize=(12, 8))
+nx.draw(graph_bad, pos=pos_bad, cmap=plt.get_cmap('rainbow'), with_labels=True, node_size=200, edge_color='gray', alpha=0.8)
+plt.title("Illicit Transactions - Time Step 37")
 plt.show()
 
 # Prediction of ilicit transactions
