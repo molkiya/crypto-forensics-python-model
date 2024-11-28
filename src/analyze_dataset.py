@@ -44,12 +44,13 @@ print('Shape of edges', df_edges.shape)
 print('Shape of features', df_features.shape)
 
 group_class = df_classes.groupby('class').count()
+
 plt.barh(['Неизвестные', 'Нелегальные', 'Легальные'], group_class['txId'].values, color=['orange', 'r', 'g'])
 plt.show()
 
 group_feature = df_features.groupby('Time step').count()
 group_feature['txId'].plot()
-plt.title('Number of transactions by Time step')
+plt.title('Количество транзакций по временным шагам')
 plt.show()
 
 df_class_feature = pd.merge(df_classes, df_features)
@@ -59,22 +60,20 @@ group_class_feature = df_class_feature.groupby(['Time step', 'class']).count()
 group_class_feature = group_class_feature['txId'].reset_index().rename(columns={'txId': 'count'})
 print(group_class_feature.head())
 
-sns.lineplot(x='Time step', y='count', hue='class', data = group_class_feature, palette=['g', 'orange', 'r'] )
+sns.lineplot(x='Time step', y='count', hue='class', data=group_class_feature, palette=['g', 'orange', 'r'])
 plt.show()
 
 class1 = group_class_feature[group_class_feature['class'] == '1']
 class2 = group_class_feature[group_class_feature['class'] == '2']
 class3 = group_class_feature[group_class_feature['class'] == 3 ]
 
-p1 = plt.bar(class3['Time step'], class3['count'], color = 'orange')
+p1 = plt.bar(class3['Time step'], class3['count'], color='orange', label='Неизвестные')
+p2 = plt.bar(class2['Time step'], class2['count'], color='g', bottom=class3['count'], label='Легальные')
+p3 = plt.bar(class1['Time step'], class1['count'], color='r', bottom=np.array(class3['count']) + np.array(class2['count']), label='Нелегальные')
 
-p2 = plt.bar(class2['Time step'], class2['count'], color='g',
-             bottom=class3['count'])
-
-p3 = plt.bar(class1['Time step'], class1['count'], color='r',
-             bottom=np.array(class3['count'])+np.array(class2['count']))
-
-plt.xlabel('Time step')
+plt.xlabel('Временной шаг')
+plt.ylabel('Количество транзакций')
+plt.legend()
 plt.show()
 
 # Filter illicit transactions for Time Step 20
@@ -88,7 +87,7 @@ graph_illicit = nx.from_pandas_edgelist(illicit_edges, source='txId1', target='t
 pos_illicit = nx.spring_layout(graph_illicit)
 plt.figure(figsize=(12, 8))
 nx.draw(graph_illicit, pos=pos_illicit, with_labels=True, node_size=100, node_color='red', edge_color='blue', alpha=0.7)
-plt.title("Illicit Transactions - Time Step 20")
+plt.title("Нелегальные транзакции - Временной шаг 20")
 plt.show()
 
 # Filter licit transactions for Time Step 20
@@ -102,7 +101,7 @@ graph_licit = nx.from_pandas_edgelist(licit_edges, source='txId1', target='txId2
 pos_licit = nx.spring_layout(graph_licit)
 plt.figure(figsize=(12, 8))
 nx.draw(graph_licit, pos=pos_licit, with_labels=True, node_size=100, node_color='green', edge_color='orange', alpha=0.7)
-plt.title("Licit Transactions - Time Step 20")
+plt.title("Легальные транзакции - Временной шаг 20")
 plt.show()
 
 # Filter illicit transactions for Time Step 37
@@ -116,7 +115,12 @@ graph_bad = nx.from_pandas_edgelist(short_edges, source='txId1', target='txId2',
 pos_bad = nx.spring_layout(graph_bad)
 plt.figure(figsize=(12, 8))
 nx.draw(graph_bad, pos=pos_bad, cmap=plt.get_cmap('rainbow'), with_labels=True, node_size=200, edge_color='gray', alpha=0.8)
-plt.title("Illicit Transactions - Time Step 37")
+plt.title("Нелегальные транзакции - Временной шаг 37")
+plt.show()
+
+plt.figure(figsize=(12, 8))
+nx.draw(graph, with_labels=False, pos=pos, node_size=100, node_color='red', edge_color='blue', alpha=0.7)
+plt.title("Предсказанные нелегальные транзакции")
 plt.show()
 
 # Prediction of ilicit transactions
