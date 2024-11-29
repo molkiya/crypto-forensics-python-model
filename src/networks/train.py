@@ -99,10 +99,10 @@ def plot_metrics(metrics):
 
     plt.figure(figsize=(12, 8))
 
-    plt.plot(epochs, metrics['precision'], label='Точность (Precision, Macro)', marker='o')
-    plt.plot(epochs, metrics['recall'], label='Полнота (Recall, Macro)', marker='o')
-    plt.plot(epochs, metrics['f1'], label='F1-мера (Macro)', marker='o')
-    plt.plot(epochs, metrics['f1_micro'], label='F1-мера (Micro)', marker='o')
+    plt.plot(epochs, metrics['precision'], label='Точность (Precision, Macro)')
+    plt.plot(epochs, metrics['recall'], label='Полнота (Recall, Macro)')
+    plt.plot(epochs, metrics['f1'], label='F1-мера (Macro)')
+    plt.plot(epochs, metrics['f1_micro'], label='F1-мера (Micro)')
 
     plt.xlabel('Эпохи')
     plt.ylabel('Значение')
