@@ -1,5 +1,6 @@
 import warnings
 import torch
+import matplotlib.pyplot as plt
 import pandas as pd
 import utils as u
 import os
@@ -49,38 +50,45 @@ print("="*50)
 model_list = list(models_to_train.items())
 
 for i in range(0, len(model_list), 2):
-
     (name, model) = model_list[i]
     data_noAgg = data_noAgg.to(args.device)
-    print('-'*50)
+    print('-' * 50)
     print(f"Training model: {name}")
-    print('-'*50)
+    print('-' * 50)
     train(args, model, data_noAgg)
-    print('-'*50)
+    print('-' * 50)
     print(f"Testing model: {name}")
-    print('-'*50)
-    test(model, data_noAgg)
-    print('-'*50)
+    print('-' * 50)
+    acc = test(model, data_noAgg)
+    print(f"Test Accuracy: {acc * 100:.2f}%")
+    print('-' * 50)
     print(f"Computing metrics for model: {name}")
-    print('-'*50)
-    compare_illicit = pd.concat([compare_illicit, pd.DataFrame([u.compute_metrics(model, name, data_noAgg, compare_illicit)])], ignore_index=True)
+    print('-' * 50)
+    metrics_noAgg = u.compute_metrics(model, name, data_noAgg, compare_illicit)
+    compare_illicit = pd.concat([compare_illicit, pd.DataFrame([metrics_noAgg])], ignore_index=True)
 
-    (name, model) = model_list[i + 1]
-    data = data.to(args.device)
-    print('-'*50)
-    print(f"Training model: {name}")
-    print('-'*50)
-    train(args, model, data)
-    print('-'*50)
-    print(f"Testing model: {name}")
-    print('-'*50)
-    test(model, data)
-    print('-'*50)
-    print(f"Computing metrics for model: {name}")
-    compare_illicit = pd.concat(
-        [compare_illicit, pd.DataFrame([u.compute_metrics(model, name, data, compare_illicit)])],
-        ignore_index=True)
-    print('-'*50)
+    # Plot metrics
+    metrics_noAgg.plot(kind='bar', x='Metric', y='Value', legend=False, title=f'Metrics for {name}')
+    plt.ylabel('Score')
+    plt.ylim(0, 1)  # Assuming the metrics are between 0 and 1
+    plt.show()
+
+    # (name, model) = model_list[i + 1]
+    # data = data.to(args.device)
+    # print('-'*50)
+    # print(f"Training model: {name}")
+    # print('-'*50)
+    # train(args, model, data)
+    # print('-'*50)
+    # print(f"Testing model: {name}")
+    # print('-'*50)
+    # test(model, data)
+    # print('-'*50)
+    # print(f"Computing metrics for model: {name}")
+    # compare_illicit = pd.concat(
+    #     [compare_illicit, pd.DataFrame([u.compute_metrics(model, name, data, compare_illicit)])],
+    #     ignore_index=True)
+    # print('-'*50)
     
 
 compare_illicit.to_csv(os.path.join('.\output', 'metrics_MultiStepLR.csv'), index=False)

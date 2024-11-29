@@ -28,18 +28,41 @@ def accuracy(pred_y, y):
     """Calculate accuracy"""
     return ((pred_y == y).sum() / len(y)).item()
 
+
+import numpy as np
+from sklearn.metrics import precision_recall_fscore_support, f1_score
+
+
 def compute_metrics(model, name, data, df):
+    # Ensure model is in evaluation mode
+    model.eval()
 
-  _, y_predicted = model((data.x, data.edge_index))[0].to("cpu").max(dim=1)
-  data = data.to("cpu")
+    # Move data to model's device
+    device = next(model.parameters()).device
+    data = data.to(device)
 
-  prec_ill,rec_ill,f1_ill,_ = precision_recall_fscore_support(data.y[data.test_mask], y_predicted[data.test_mask], average='binary', pos_label=0)
-  f1_micro = f1_score(data.y[data.test_mask], y_predicted[data.test_mask], average='micro')
+    # Get model predictions
+    out, _ = model((data.x, data.edge_index))
+    _, y_predicted = out.max(dim=1)
 
-  m = {'model': name, 'Precision': np.round(prec_ill,3), 'Recall': np.round(rec_ill,3), 'F1': np.round(f1_ill,3),
-   'F1 Micro AVG':np.round(f1_micro,3)}
+    # Move predictions and labels to CPU for metric computation
+    y_predicted = y_predicted[data.test_mask].cpu()
+    y_true = data.y[data.test_mask].cpu()
 
-  return m
+    # Compute metrics
+    prec_ill, rec_ill, f1_ill, _ = precision_recall_fscore_support(y_true, y_predicted, average='binary', pos_label=0)
+    f1_micro = f1_score(y_true, y_predicted, average='micro')
+
+    m = {
+        'model': name,
+        'Precision': np.round(prec_ill, 3),
+        'Recall': np.round(rec_ill, 3),
+        'F1': np.round(f1_ill, 3),
+        'F1 Micro AVG': np.round(f1_micro, 3)
+    }
+
+    return m
+
 
 def plot_results(df):
     labels = df['model'].to_numpy()
