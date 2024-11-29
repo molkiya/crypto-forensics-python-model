@@ -4,10 +4,12 @@ from torch.optim import Adam
 from utils import accuracy
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+import matplotlib.pyplot as plt
+from sklearn.metrics import precision_score, recall_score, f1_score
+
 
 def train(args, model, data):
-    """Train a GNN model and return the trained model."""
-    # Check if CUDA is available and set device to GPU or CPU
+    """Train a GNN model, return the trained model, and plot metrics."""
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
     else:
@@ -19,13 +21,20 @@ def train(args, model, data):
 
     optimizer = Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30, 60, 90, 120], gamma=0.1)
     epochs = args['epochs']
     model.train()
 
     best_val_loss = float('inf')
     patience = 1000
     epochs_since_best = 0
+
+    # Metrics storage
+    metrics = {
+        'precision': [],
+        'recall': [],
+        'f1': [],
+        'f1_micro': []
+    }
 
     for epoch in range(epochs + 1):
         optimizer.zero_grad()
@@ -37,11 +46,27 @@ def train(args, model, data):
 
         # Validation
         with torch.no_grad():
+            val_out = out[data.val_mask].argmax(dim=1)
             val_loss = F.cross_entropy(out[data.val_mask], data.y[data.val_mask])
-            val_acc = accuracy(out[data.val_mask].argmax(dim=1), data.y[data.val_mask])
+            val_acc = accuracy(val_out, data.y[data.val_mask])
 
             # Adjust learning rate
             scheduler.step(val_loss)
+
+            # Compute metrics
+            y_true = data.y[data.val_mask].cpu().numpy()
+            y_pred = val_out.cpu().numpy()
+
+            precision = precision_score(y_true, y_pred, average='macro', zero_division=0)
+            recall = recall_score(y_true, y_pred, average='macro', zero_division=0)
+            f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
+            f1_micro = f1_score(y_true, y_pred, average='micro', zero_division=0)
+
+            # Store metrics
+            metrics['precision'].append(precision)
+            metrics['recall'].append(recall)
+            metrics['f1'].append(f1)
+            metrics['f1_micro'].append(f1_micro)
 
         # Check if validation loss has improved
         if val_loss < best_val_loss:
@@ -54,14 +79,37 @@ def train(args, model, data):
         if epoch % 100 == 0:
             print(f'Epoch {epoch:>3} | Train Loss: {loss:.3f} | Train Acc: '
                   f'{acc * 100:>6.2f}% | Val Loss: {val_loss:.3f} | '
-                  f'Val Acc: {val_acc * 100:.2f}%')
+                  f'Val Acc: {val_acc * 100:.2f}% | Precision: {precision:.3f} | '
+                  f'Recall: {recall:.3f} | F1: {f1:.3f} | F1 (Micro): {f1_micro:.3f}')
 
         # Check if early stopping criteria is met
         if epochs_since_best >= patience:
             print(f'Early stopping at epoch {epoch}')
             break
 
+    # Plot metrics after training
+    plot_metrics(metrics)
+
     return model
+
+
+def plot_metrics(metrics):
+    """Plot precision, recall, F1, and micro F1 scores."""
+    epochs = range(1, len(metrics['precision']) + 1)
+
+    plt.figure(figsize=(12, 8))
+
+    plt.plot(epochs, metrics['precision'], label='Precision (Macro)', marker='o')
+    plt.plot(epochs, metrics['recall'], label='Recall (Macro)', marker='o')
+    plt.plot(epochs, metrics['f1'], label='F1 Score (Macro)', marker='o')
+    plt.plot(epochs, metrics['f1_micro'], label='F1 Score (Micro)', marker='o')
+
+    plt.xlabel('Epochs')
+    plt.ylabel('Score')
+    plt.title('Validation Metrics Over Epochs')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 @torch.no_grad()
