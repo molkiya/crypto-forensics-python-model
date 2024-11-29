@@ -33,7 +33,8 @@ def train(args, model, data):
         'precision': [],
         'recall': [],
         'f1': [],
-        'f1_micro': []
+        'f1_micro': [],
+        'f1_macro': [],
     }
 
     for epoch in range(epochs + 1):
@@ -59,13 +60,15 @@ def train(args, model, data):
 
             precision = precision_score(y_true, y_pred, average='macro', zero_division=0)
             recall = recall_score(y_true, y_pred, average='macro', zero_division=0)
-            f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
+            f1 = f1_score(y_true, y_pred, zero_division=0)
+            f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
             f1_micro = f1_score(y_true, y_pred, average='micro', zero_division=0)
 
             # Store metrics
             metrics['precision'].append(precision)
             metrics['recall'].append(recall)
             metrics['f1'].append(f1)
+            metrics['f1_macro'].append(f1_macro)
             metrics['f1_micro'].append(f1_micro)
 
         # Check if validation loss has improved
@@ -80,7 +83,7 @@ def train(args, model, data):
             print(f'Epoch {epoch:>3} | Train Loss: {loss:.3f} | Train Acc: '
                   f'{acc * 100:>6.2f}% | Val Loss: {val_loss:.3f} | '
                   f'Val Acc: {val_acc * 100:.2f}% | Precision: {precision:.3f} | '
-                  f'Recall: {recall:.3f} | F1: {f1:.3f} | F1 (Micro): {f1_micro:.3f}')
+                  f'Recall: {recall:.3f} | F1: {f1:.3f} | F1 (Macro): {f1_macro:.3f} | F1 (Micro): {f1_micro:.3f}')
 
         # Check if early stopping criteria is met
         if epochs_since_best >= patience:
