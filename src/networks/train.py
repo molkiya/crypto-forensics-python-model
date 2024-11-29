@@ -94,22 +94,23 @@ def train(args, model, data):
 
 
 def plot_metrics(metrics):
-    """Plot precision, recall, F1, and micro F1 scores."""
+    """Построение графиков метрик: Precision, Recall, F1 и Micro F1."""
     epochs = range(1, len(metrics['precision']) + 1)
 
     plt.figure(figsize=(12, 8))
 
-    plt.plot(epochs, metrics['precision'], label='Precision (Macro)', marker='o')
-    plt.plot(epochs, metrics['recall'], label='Recall (Macro)', marker='o')
-    plt.plot(epochs, metrics['f1'], label='F1 Score (Macro)', marker='o')
-    plt.plot(epochs, metrics['f1_micro'], label='F1 Score (Micro)', marker='o')
+    plt.plot(epochs, metrics['precision'], label='Точность (Precision, Macro)', marker='o')
+    plt.plot(epochs, metrics['recall'], label='Полнота (Recall, Macro)', marker='o')
+    plt.plot(epochs, metrics['f1'], label='F1-мера (Macro)', marker='o')
+    plt.plot(epochs, metrics['f1_micro'], label='F1-мера (Micro)', marker='o')
 
-    plt.xlabel('Epochs')
-    plt.ylabel('Score')
-    plt.title('Validation Metrics Over Epochs')
+    plt.xlabel('Эпохи')
+    plt.ylabel('Значение')
+    plt.title('Метрики на валидационных данных по эпохам')
     plt.legend()
     plt.grid(True)
     plt.show()
+
 
 
 @torch.no_grad()
