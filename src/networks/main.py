@@ -1,6 +1,5 @@
 import warnings
 import torch
-import matplotlib.pyplot as plt
 import pandas as pd
 import utils as u
 import os
@@ -49,56 +48,29 @@ print("="*50)
 
 model_list = list(models_to_train.items())
 
-
-def plot_metrics(metrics):
-    epochs = metrics['epoch']
-
-    plt.figure(figsize=(12, 8))
-
-    # Subplot for Loss
-    plt.subplot(2, 2, 1)
-    plt.plot(epochs, metrics['train_loss'], label='Train Loss')
-    plt.plot(epochs, metrics['val_loss'], label='Val Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Loss Over Epochs')
-    plt.legend()
-
-    # Subplot for Accuracy
-    plt.subplot(2, 2, 2)
-    plt.plot(epochs, metrics['train_acc'], label='Train Acc')
-    plt.plot(epochs, metrics['val_acc'], label='Val Acc')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy Over Epochs')
-    plt.legend()
-
-    # Subplot for Precision, Recall, F1
-    plt.subplot(2, 2, 3)
-    plt.plot(epochs, metrics['precision'], label='Precision')
-    plt.plot(epochs, metrics['recall'], label='Recall')
-    plt.plot(epochs, metrics['f1'], label='F1 Score')
-    plt.xlabel('Epoch')
-    plt.ylabel('Score')
-    plt.title('Precision, Recall, F1 Over Epochs')
-    plt.legend()
-
-    # Subplot for F1 Micro AVG
-    plt.subplot(2, 2, 4)
-    plt.plot(epochs, metrics['f1_micro'], label='F1 Micro AVG')
-    plt.xlabel('Epoch')
-    plt.ylabel('F1 Micro AVG')
-    plt.title('F1 Micro AVG Over Epochs')
-    plt.legend()
-
-    plt.tight_layout()
-    plt.show()
-
 for i in range(0, len(model_list), 2):
-    # Call train function
     (name, model) = model_list[i]
-    _, metrics_over_epochs = train(args, model, data)
-    plot_metrics(metrics_over_epochs)
+    data_noAgg = data_noAgg.to(args.device)
+    print('-' * 50)
+    print(f"Training model: {name}")
+    print('-' * 50)
+    train(args, model, data_noAgg)
+    print('-' * 50)
+    print(f"Testing model: {name}")
+    print('-' * 50)
+    acc = test(model, data_noAgg)
+    print(f"Test Accuracy: {acc * 100:.2f}%")
+    print('-' * 50)
+    print(f"Computing metrics for model: {name}")
+    print('-' * 50)
+    metrics_noAgg = u.compute_metrics(model, name, data_noAgg, compare_illicit)
+    compare_illicit = pd.concat([compare_illicit, pd.DataFrame([metrics_noAgg])], ignore_index=True)
+
+    # Plot metrics
+    metrics_noAgg.plot(kind='bar', x='Metric', y='Value', legend=False, title=f'Metrics for {name}')
+    plt.ylabel('Score')
+    plt.ylim(0, 1)  # Assuming the metrics are between 0 and 1
+    plt.show()
 
     # (name, model) = model_list[i + 1]
     # data = data.to(args.device)
