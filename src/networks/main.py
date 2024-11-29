@@ -55,22 +55,31 @@ for i in range(0, len(model_list), 2):
     print('-' * 50)
     print(f"Training model: {name}")
     print('-' * 50)
-    train(args, model, data_noAgg)
-    print('-' * 50)
-    print(f"Testing model: {name}")
-    print('-' * 50)
-    acc = test(model, data_noAgg)
-    print(f"Test Accuracy: {acc * 100:.2f}%")
-    print('-' * 50)
-    print(f"Computing metrics for model: {name}")
-    print('-' * 50)
-    metrics_noAgg = u.compute_metrics(model, name, data_noAgg, compare_illicit)
-    compare_illicit = pd.concat([compare_illicit, pd.DataFrame([metrics_noAgg])], ignore_index=True)
+    # Train the model
+    model, history = train(args, model, data_noAgg)
 
-    # Plot metrics
-    metrics_noAgg.plot(kind='bar', x='Metric', y='Value', legend=False, title=f'Metrics for {name}')
-    plt.ylabel('Score')
-    plt.ylim(0, 1)  # Assuming the metrics are between 0 and 1
+    # Plot metrics over time
+    plt.figure(figsize=(12, 6))
+
+    # Plot Loss
+    plt.subplot(1, 2, 1)
+    plt.plot(history['epoch'], history['train_loss'], label='Train Loss', color='blue')
+    plt.plot(history['epoch'], history['val_loss'], label='Val Loss', color='orange')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(f'{name}: Loss Over Time')
+    plt.legend()
+
+    # Plot Accuracy
+    plt.subplot(1, 2, 2)
+    plt.plot(history['epoch'], history['train_acc'], label='Train Accuracy', color='green')
+    plt.plot(history['epoch'], history['val_acc'], label='Val Accuracy', color='red')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title(f'{name}: Accuracy Over Time')
+    plt.legend()
+
+    plt.tight_layout()
     plt.show()
 
     # (name, model) = model_list[i + 1]

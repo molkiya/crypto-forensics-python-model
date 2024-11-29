@@ -7,7 +7,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 def train(args, model, data):
     """Train a GNN model and return the trained model."""
-    # Check if CUDA is available and set device to GPU or CPU
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
     else:
@@ -19,13 +18,21 @@ def train(args, model, data):
 
     optimizer = Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
-    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30, 60, 90, 120], gamma=0.1)
     epochs = args['epochs']
     model.train()
 
     best_val_loss = float('inf')
     patience = 1000
     epochs_since_best = 0
+
+    # Metrics history
+    history = {
+        'epoch': [],
+        'train_loss': [],
+        'train_acc': [],
+        'val_loss': [],
+        'val_acc': []
+    }
 
     for epoch in range(epochs + 1):
         optimizer.zero_grad()
@@ -42,6 +49,13 @@ def train(args, model, data):
 
             # Adjust learning rate
             scheduler.step(val_loss)
+
+        # Save metrics to history
+        history['epoch'].append(epoch)
+        history['train_loss'].append(loss.item())
+        history['train_acc'].append(acc)
+        history['val_loss'].append(val_loss.item())
+        history['val_acc'].append(val_acc)
 
         # Check if validation loss has improved
         if val_loss < best_val_loss:
@@ -61,7 +75,7 @@ def train(args, model, data):
             print(f'Early stopping at epoch {epoch}')
             break
 
-    return model
+    return model, history
 
 
 @torch.no_grad()
