@@ -49,38 +49,56 @@ print("="*50)
 
 model_list = list(models_to_train.items())
 
-for i in range(0, len(model_list), 2):
-    (name, model) = model_list[i]
-    data_noAgg = data_noAgg.to(args.device)
-    print('-' * 50)
-    print(f"Training model: {name}")
-    print('-' * 50)
-    # Train the model
-    model, history = train(args, model, data_noAgg)
 
-    # Plot metrics over time
-    plt.figure(figsize=(12, 6))
+def plot_metrics(metrics):
+    epochs = metrics['epoch']
 
-    # Plot Loss
-    plt.subplot(1, 2, 1)
-    plt.plot(history['epoch'], history['train_loss'], label='Train Loss', color='blue')
-    plt.plot(history['epoch'], history['val_loss'], label='Val Loss', color='orange')
+    plt.figure(figsize=(12, 8))
+
+    # Subplot for Loss
+    plt.subplot(2, 2, 1)
+    plt.plot(epochs, metrics['train_loss'], label='Train Loss')
+    plt.plot(epochs, metrics['val_loss'], label='Val Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title(f'{name}: Loss Over Time')
+    plt.title('Loss Over Epochs')
     plt.legend()
 
-    # Plot Accuracy
-    plt.subplot(1, 2, 2)
-    plt.plot(history['epoch'], history['train_acc'], label='Train Accuracy', color='green')
-    plt.plot(history['epoch'], history['val_acc'], label='Val Accuracy', color='red')
+    # Subplot for Accuracy
+    plt.subplot(2, 2, 2)
+    plt.plot(epochs, metrics['train_acc'], label='Train Acc')
+    plt.plot(epochs, metrics['val_acc'], label='Val Acc')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.title(f'{name}: Accuracy Over Time')
+    plt.title('Accuracy Over Epochs')
+    plt.legend()
+
+    # Subplot for Precision, Recall, F1
+    plt.subplot(2, 2, 3)
+    plt.plot(epochs, metrics['precision'], label='Precision')
+    plt.plot(epochs, metrics['recall'], label='Recall')
+    plt.plot(epochs, metrics['f1'], label='F1 Score')
+    plt.xlabel('Epoch')
+    plt.ylabel('Score')
+    plt.title('Precision, Recall, F1 Over Epochs')
+    plt.legend()
+
+    # Subplot for F1 Micro AVG
+    plt.subplot(2, 2, 4)
+    plt.plot(epochs, metrics['f1_micro'], label='F1 Micro AVG')
+    plt.xlabel('Epoch')
+    plt.ylabel('F1 Micro AVG')
+    plt.title('F1 Micro AVG Over Epochs')
     plt.legend()
 
     plt.tight_layout()
     plt.show()
+
+for i in range(0, len(model_list), 2):
+    # Call train function
+    (name, model) = model_list[i]
+    _, metrics_over_epochs = train(args, model, data)
+    plot_metrics(metrics_over_epochs)
 
     # (name, model) = model_list[i + 1]
     # data = data.to(args.device)
