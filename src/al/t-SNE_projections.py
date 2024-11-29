@@ -17,56 +17,56 @@ X_train, y_train, X_test, y_test = split_data(train_data = train_data, test_data
 
 #plot true labels
 reducer = TSNE(n_components=2, init='pca', learning_rate='auto', n_iter=10000)
-# embedding = reducer.fit_transform(X_test)
+embedding = reducer.fit_transform(X_test)
 
-# embedding_df = pd.DataFrame(embedding, columns=('dim_0', 'dim_1'))
-# embedding_df['class'] = y_test.tolist()
-# embedding_df['class'] = embedding_df['class'].replace({1: 'Illicit', 0: 'Licit'})
+embedding_df = pd.DataFrame(embedding, columns=('dim_0', 'dim_1'))
+embedding_df['class'] = y_test.tolist()
+embedding_df['class'] = embedding_df['class'].replace({1: 'Illicit', 0: 'Licit'})
 
-# plot_TSNE_projection(title='True labels', embedding_df=embedding_df, hue_on='class', fontsize=13, labelsize=15,
-#                      palette=['green', 'red'])
+plot_TSNE_projection(title='True labels', embedding_df=embedding_df, hue_on='class', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
 
 
 #plot the Random Forest predicted labels
-# model_rf = RandomForestClassifier()
-# probabilities_rf = supervised_prediction(X_train, y_train, X_test, model_rf, runs=1)
-# (_, _, _, max_threshold_rf) = calculate_metrics(y_test, probabilities_rf)
-# # Extract the scalar threshold from the list
-# max_threshold_rf = max_threshold_rf[0]
-# # Ensure probabilities_rf is a 2D array
-# print(f"Probabilities: {probabilities_rf}")
-#
-# # Apply the threshold to the second column of probabilities
-# predictions_rf = (probabilities_rf[0][:, 1] > max_threshold_rf).astype(int)
-#
-# reducer = TSNE(n_components=2, init='pca', learning_rate='auto', n_iter=10000)
-# embedding_rf = reducer.fit_transform(X_test)
-#
-# embedding_rf_df = pd.DataFrame(embedding_rf, columns=('dim_0', 'dim_1'))
-# embedding_rf_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in
-#                               predictions_rf]
-#
-#
-# plot_TSNE_projection(title='Random Forest predictions', embedding_df=embedding_rf_df, hue_on='prediction', fontsize=13, labelsize=15,
-#                      palette=['green', 'red'])
+model_rf = RandomForestClassifier()
+probabilities_rf = supervised_prediction(X_train, y_train, X_test, model_rf, runs=1)
+(_, _, _, max_threshold_rf) = calculate_metrics(y_test, probabilities_rf)
+# Extract the scalar threshold from the list
+max_threshold_rf = max_threshold_rf[0]
+# Ensure probabilities_rf is a 2D array
+print(f"Probabilities: {probabilities_rf}")
+
+# Apply the threshold to the second column of probabilities
+predictions_rf = (probabilities_rf[0][:, 1] > max_threshold_rf).astype(int)
+
+reducer = TSNE(n_components=2, init='pca', learning_rate='auto', n_iter=10000)
+embedding_rf = reducer.fit_transform(X_test)
+
+embedding_rf_df = pd.DataFrame(embedding_rf, columns=('dim_0', 'dim_1'))
+embedding_rf_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in
+                              predictions_rf]
 
 
-#plot the XGBoost predicted labels
-# model_xgb = XGBClassifier()
-# probabilities_xgb = supervised_prediction(X_train, y_train, X_test, model_xgb, runs=1)
-# (_,_, _, max_threshold_xgb) = calculate_metrics(y_test, probabilities_xgb)
-# predictions_xgb = (probabilities_xgb[0][:, 1] > max_threshold_xgb).astype(int)
-#
-# reducer = TSNE(n_components=2, init='pca', learning_rate='auto', n_iter=10000)
-# embedding_xgb = reducer.fit_transform(X_test)
-#
-# embedding_xgb_df = pd.DataFrame(embedding_xgb, columns=('dim_0', 'dim_1'))
-# embedding_xgb_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in
-#                               predictions_xgb]
-#
-#
-# plot_TSNE_projection(title='XGBoost predictions', embedding_df=embedding_xgb_df, hue_on='prediction', fontsize=13, labelsize=15,
-#                      palette=['green', 'red'])
+plot_TSNE_projection(title='Random Forest predictions', embedding_df=embedding_rf_df, hue_on='prediction', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
+
+
+# plot the XGBoost predicted labels
+model_xgb = XGBClassifier()
+probabilities_xgb = supervised_prediction(X_train, y_train, X_test, model_xgb, runs=1)
+(_,_, _, max_threshold_xgb) = calculate_metrics(y_test, probabilities_xgb)
+predictions_xgb = (probabilities_xgb[0][:, 1] > max_threshold_xgb).astype(int)
+
+reducer = TSNE(n_components=2, init='pca', learning_rate='auto', n_iter=10000)
+embedding_xgb = reducer.fit_transform(X_test)
+
+embedding_xgb_df = pd.DataFrame(embedding_xgb, columns=('dim_0', 'dim_1'))
+embedding_xgb_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in
+                              predictions_xgb]
+
+
+plot_TSNE_projection(title='XGBoost predictions', embedding_df=embedding_xgb_df, hue_on='prediction', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
 
 
 #plot the Logistic Regression predicted labels
