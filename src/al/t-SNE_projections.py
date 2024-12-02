@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn.manifold import TSNE
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 
 
@@ -84,4 +85,40 @@ embedding_lr_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in
 
 
 plot_TSNE_projection(title='Logistic Regression predictions', embedding_df=embedding_lr_df, hue_on='prediction', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
+
+
+# Plot true labels using PCA
+pca = PCA(n_components=2)
+embedding_pca = pca.fit_transform(X_test)
+
+embedding_df_pca = pd.DataFrame(embedding_pca, columns=('dim_0', 'dim_1'))
+embedding_df_pca['class'] = y_test.tolist()
+embedding_df_pca['class'] = embedding_df_pca['class'].replace({1: 'Illicit', 0: 'Licit'})
+
+plot_TSNE_projection(title='True labels (PCA)', embedding_df=embedding_df_pca, hue_on='class', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
+
+# Plot Random Forest predicted labels using PCA
+embedding_rf_pca = pca.fit_transform(X_test)
+embedding_rf_pca_df = pd.DataFrame(embedding_rf_pca, columns=('dim_0', 'dim_1'))
+embedding_rf_pca_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in predictions_rf]
+
+plot_TSNE_projection(title='Random Forest predictions (PCA)', embedding_df=embedding_rf_pca_df, hue_on='prediction', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
+
+# Plot XGBoost predicted labels using PCA
+embedding_xgb_pca = pca.fit_transform(X_test)
+embedding_xgb_pca_df = pd.DataFrame(embedding_xgb_pca, columns=('dim_0', 'dim_1'))
+embedding_xgb_pca_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in predictions_xgb]
+
+plot_TSNE_projection(title='XGBoost predictions (PCA)', embedding_df=embedding_xgb_pca_df, hue_on='prediction', fontsize=13, labelsize=15,
+                     palette=['green', 'red'])
+
+# Plot Logistic Regression predicted labels using PCA
+embedding_lr_pca = pca.fit_transform(X_test)
+embedding_lr_pca_df = pd.DataFrame(embedding_lr_pca, columns=('dim_0', 'dim_1'))
+embedding_lr_pca_df['prediction'] = ['Illicit' if pred == 1 else 'Licit' for pred in predictions_lr]
+
+plot_TSNE_projection(title='Logistic Regression predictions (PCA)', embedding_df=embedding_lr_pca_df, hue_on='prediction', fontsize=13, labelsize=15,
                      palette=['green', 'red'])
