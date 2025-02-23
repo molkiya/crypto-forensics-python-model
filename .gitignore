@@ -1,2 +1,4 @@
-data/elliptic/dataset/*.csv
+data/elliptic/dataset/**/*.csv
+output/*.csv
+output/*.png
 .idea

@@ -1,3 +1,0 @@
-model,Precision,Recall,F1,F1 Micro AVG
-Chebyshev Convolution (tx),0.96,0.765,0.852,0.975
-Chebyshev Convolution (tx+agg),0.954,0.859,0.904,0.982

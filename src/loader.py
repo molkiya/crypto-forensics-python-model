@@ -57,6 +57,7 @@ def data_to_pyg(df_class_feature, df_edges):
     # Define PyTorch Geometric data structure with Pandas dataframe values
     edge_index = torch.tensor([df_edges["txId1"].values,
                             df_edges["txId2"].values], dtype=torch.long)
+    print(df_class_feature.iloc[:, 3:].values)
     x = torch.tensor(df_class_feature.iloc[:, 3:].values, dtype=torch.float)
     y = torch.tensor(df_class_feature["class"].values, dtype=torch.long)
 

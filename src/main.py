@@ -12,7 +12,7 @@ from models import models
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 
-data_path = '.\data\elliptic\dataset'
+data_path = '.\data\elliptic\dataset\elliptic'
 
 print("Loading configuration from file...")
 args = u.get_config()
@@ -66,7 +66,7 @@ for i in range(0, len(model_list), 2):
     compare_illicit = pd.concat([compare_illicit, pd.DataFrame([u.compute_metrics(model, name, data_noAgg, compare_illicit)])], ignore_index=True)
     
 
-compare_illicit.to_csv(os.path.join('.\output', 'metrics_MultiStepLR.csv'), index=False)
+compare_illicit.to_csv(os.path.join('.\output', 'metrics.csv'), index=False)
 print('Results saved to metrics.csv')
 
 u.plot_results(compare_illicit)
