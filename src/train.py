@@ -118,6 +118,7 @@ def plot_metrics(metrics):
 
 @torch.no_grad()
 def test(model, data):
+    print(data)
     """Evaluate the model on test set and print the accuracy score."""
     # Set device to GPU or CPU based on availability
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -125,6 +126,12 @@ def test(model, data):
     data = data.to(device)
 
     model.eval()
+    print("data.x")
+    print(data.x[:1])
+    print("data.edge_index")
+    print(data.edge_index)
     out, _ = model((data.x, data.edge_index))
+    print("out", out)
     acc = accuracy(out[data.test_mask].argmax(dim=1), data.y[data.test_mask])
+    print("acc", acc)
     return acc

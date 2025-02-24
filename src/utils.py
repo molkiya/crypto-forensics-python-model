@@ -22,6 +22,7 @@ def get_config():
         args = AttributeDict(yaml.safe_load(config))
     args.lr = float(args.lr)
     args.weight_decay = float(args.weight_decay)
+    print(args)
     return args
 
 def accuracy(pred_y, y):

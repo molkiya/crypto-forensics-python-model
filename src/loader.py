@@ -27,10 +27,21 @@ def load_data(data_path, noAgg=False):
     # Map unknown class to '3'
     df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '3'
 
+    print('df_classes')
+    print(df_classes)
+    print('df_features')
+    print(df_features)
+
     # Merge classes and features in one Dataframe
     df_class_feature = pd.merge(df_classes, df_features)
 
+    # df_class_feature = df_class_feature.fillna(0)
+
+    print('df_class_feature')
+    print(df_class_feature)
+
     # Exclude records with unknown class transaction
+
     df_class_feature = df_class_feature[df_class_feature["class"] != '3']
 
     # Build Dataframe with head and tail of transactions (edges)
@@ -53,12 +64,9 @@ def load_data(data_path, noAgg=False):
 
 
 def data_to_pyg(df_class_feature, df_edges):
-
-    # Define PyTorch Geometric data structure with Pandas dataframe values
-    edge_index = torch.tensor([df_edges["txId1"].values,
-                            df_edges["txId2"].values], dtype=torch.long)
-    print(df_class_feature.iloc[:, 3:].values)
-    x = torch.tensor(df_class_feature.iloc[:, 3:].values, dtype=torch.float)
+    features = df_class_feature.iloc[:, 3:].apply(pd.to_numeric, errors='coerce').fillna(0).values
+    edge_index = torch.tensor([df_edges["txId1"].values, df_edges["txId2"].values], dtype=torch.long)
+    x = torch.tensor(features, dtype=torch.float)
     y = torch.tensor(df_class_feature["class"].values, dtype=torch.long)
 
     data = Data(x=x, edge_index=edge_index, y=y)
