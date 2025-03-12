@@ -7,8 +7,6 @@ from loader import load_data, data_to_pyg
 from train import train, test
 from models import models
 
-# ...
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 
@@ -62,8 +60,23 @@ print(f"Computing metrics for model: {name}")
 print('-'*50)
 for name, param in model.state_dict().items():
     print(f"{name}: {param.shape}")
-torch.save(model.state_dict(), 'aml_bitcoin.pth')
-compare_illicit = pd.concat([compare_illicit, pd.DataFrame([u.compute_metrics(model, name, data_noAgg, compare_illicit)])], ignore_index=True)
+
+# Сохранение модели
+model_name = "aml_bitcoin"
+model_extensions = list(['.pth', '.pt'])
+for model_ext in model_extensions:
+    torch.save(model.state_dict(), (model_name + model_ext))
+
+# Загрузка модели и повторный тест на данных
+checkpoint = torch.load(f'{model_name}{model_extensions[0]}', map_location=args.device)
+loaded_model = models.ChebyshevConvolution(args, [1, 2, 3, 4], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device)
+loaded_model.load_state_dict(checkpoint)
+loaded_model.eval()
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model_uploaded = loaded_model.to(device)
+test(model_uploaded, data_noAgg)
+compare_illicit = pd.concat([compare_illicit, pd.DataFrame([u.compute_metrics(loaded_model, name, data_noAgg, compare_illicit)])], ignore_index=True)
 
 compare_illicit.to_csv(os.path.join('.\output', 'metrics.csv'), index=False)
 print('Results saved to metrics.csv')
