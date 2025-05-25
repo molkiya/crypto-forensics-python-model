@@ -1,67 +1,46 @@
-import pandas as pd
 import torch
-import os.path as osp
 from torch_geometric.data import Data
 from torch_geometric.transforms import RandomNodeSplit
 
-def load_data(data_path, noAgg=False):
+import os.path as osp
+import pandas as pd
 
-    # Read edges, features and classes from csv files
+def load_data(data_path):
+    # Читаем данные
     df_edges = pd.read_csv(osp.join(data_path, "elliptic_txs_edgelist.csv"))
-    df_features = pd.read_csv(osp.join(data_path, "elliptic_txs_features.csv"), header=None)
+    df_features = pd.read_csv(osp.join(data_path, "tx_features_robust_base_tx_wallet_scaled.csv"))
     df_classes = pd.read_csv(osp.join(data_path, "elliptic_txs_classes.csv"))
 
-    # Name colums basing on index
-    colNames1 = {'0': 'txId', 1: "Time step"}
-    colNames2 = {str(ii+2): "Local_feature_" + str(ii+1) for ii in range(94)}
-    colNames3 = {str(ii+96): "Aggregate_feature_" + str(ii+1) for ii in range(72)}
-
-    colNames = dict(colNames1, **colNames2, **colNames3)
-    colNames = {int(jj): item_kk for jj, item_kk in colNames.items()}
-
-    # Rename feature columns
-    df_features = df_features.rename(columns=colNames)
-    if noAgg:
-        df_features = df_features.drop(df_features.iloc[:, 96:], axis = 1)
-
-    # Map unknown class to '3'
+    # Меняем класс 'unknown' на '3' (или исключаем — можно выбрать)
     df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '3'
 
-    print('df_classes')
-    print(df_classes)
-    print('df_features')
-    print(df_features)
+    # Приводим txId к строкам для корректного объединения
+    df_classes["txId"] = df_classes["txId"].astype(str)
+    df_features["txId"] = df_features["txId"].astype(str)
+    df_edges["txId1"] = df_edges["txId1"].astype(str)
+    df_edges["txId2"] = df_edges["txId2"].astype(str)
 
-    # Merge classes and features in one Dataframe
-    df_class_feature = pd.merge(df_classes, df_features)
+    # Объединяем фичи и классы по txId
+    df_class_feature = pd.merge(df_classes, df_features, how="inner", on="txId")
 
-    # df_class_feature = df_class_feature.fillna(0)
-
-    print('df_class_feature')
-    print(df_class_feature)
-
-    # Exclude records with unknown class transaction
-
+    # Исключаем неизвестные классы
     df_class_feature = df_class_feature[df_class_feature["class"] != '3']
 
-    # Build Dataframe with head and tail of transactions (edges)
-    known_txs = df_class_feature["txId"].values
+    # Фильтруем рёбра — оставляем только ребра между известными транзакциями
+    known_txs = set(df_class_feature["txId"])
     df_edges = df_edges[(df_edges["txId1"].isin(known_txs)) & (df_edges["txId2"].isin(known_txs))]
 
-    # Build indices for features and edge types
-    features_idx = {name: idx for idx, name in enumerate(sorted(df_class_feature["txId"].unique()))}
-    class_idx = {name: idx for idx, name in enumerate(sorted(df_class_feature["class"].unique()))}
+    # Создаем индексы для txId и class
+    features_idx = {tx: idx for idx, tx in enumerate(sorted(df_class_feature["txId"].unique()))}
+    class_idx = {cls: idx for idx, cls in enumerate(sorted(df_class_feature["class"].unique()))}
 
-    # Apply index encoding to features
-    df_class_feature["txId"] = df_class_feature["txId"].apply(lambda name: features_idx[name])
-    df_class_feature["class"] = df_class_feature["class"].apply(lambda name: class_idx[name])
+    # Кодируем txId и class в индексы
+    df_class_feature["txId"] = df_class_feature["txId"].map(features_idx)
+    df_class_feature["class"] = df_class_feature["class"].map(class_idx)
+    df_edges["txId1"] = df_edges["txId1"].map(features_idx)
+    df_edges["txId2"] = df_edges["txId2"].map(features_idx)
 
-    # Apply index encoding to edges
-    df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_idx[name])
-    df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_idx[name])
-    
     return df_class_feature, df_edges
-
 
 def data_to_pyg(df_class_feature, df_edges):
     features = df_class_feature.iloc[:, 3:].apply(pd.to_numeric, errors='coerce').fillna(0).values

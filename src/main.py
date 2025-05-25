@@ -19,12 +19,10 @@ print("="*50)
 print("Loading graph data...")
 data_path = args.data_path if data_path is None else data_path
 
-features, edges = load_data(data_path)
-features_noAgg, edges_noAgg = load_data(data_path, noAgg=True)
+features_noAgg, edges_noAgg = load_data(data_path)
 
 u.seed_everything(42)
 
-data = data_to_pyg(features, edges)
 data_noAgg = data_to_pyg(features_noAgg, edges_noAgg)
 
 print("Graph data loaded successfully")
@@ -40,7 +38,7 @@ print("Edge indices (edge_index):", data_noAgg.edge_index)
 print("Labels (y):", data_noAgg.y)
 
 name = "ChebyshevConvolution"
-model = models.ChebyshevConvolution(args, [1, 2, 3, 4], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device)
+model = models.ChebyshevConvolution(args, [1, 2, 4], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device)
 
 compare_illicit = pd.DataFrame(columns=['model','Precision','Recall', 'F1', 'F1 Micro AVG'])
 print("Starting training models")
@@ -69,7 +67,7 @@ for model_ext in model_extensions:
 
 # Загрузка модели и повторный тест на данных
 checkpoint = torch.load(f'{model_name}{model_extensions[0]}', map_location=args.device)
-loaded_model = models.ChebyshevConvolution(args, [1, 2, 3, 4], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device)
+loaded_model = models.ChebyshevConvolution(args, [1, 2, 4], data_noAgg.num_features, args.hidden_units_noAgg).to(args.device)
 loaded_model.load_state_dict(checkpoint)
 loaded_model.eval()
 
@@ -78,8 +76,8 @@ model_uploaded = loaded_model.to(device)
 test(model_uploaded, data_noAgg)
 compare_illicit = pd.concat([compare_illicit, pd.DataFrame([u.compute_metrics(loaded_model, name, data_noAgg, compare_illicit)])], ignore_index=True)
 
-compare_illicit.to_csv(os.path.join('.\output', 'metrics.csv'), index=False)
-print('Results saved to metrics.csv')
+compare_illicit.to_csv(os.path.join('.\output', 'metrics_robust_base_tx_wallet.csv'), index=False)
+print('Results saved to metrics_robust_base_tx_wallet.csv')
 
 u.plot_results(compare_illicit)
 
