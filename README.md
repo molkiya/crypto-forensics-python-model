@@ -1,5 +1,7 @@
 # Bitcoin AML Detection using Graph Neural Networks
 
+> **Language:** [Русский](README.md) | [English](README_EN.md)
+
 Проект для обнаружения отмывания денег (AML) в транзакциях Bitcoin с использованием графовых нейронных сетей (GNN).
 
 ## Описание
@@ -251,4 +253,10 @@ Marat Kiiamov (kiya.marat@gmail.com)
 
 - Elliptic за предоставление датасета
 - PyTorch Geometric за библиотеку для работы с графовыми нейронными сетями
+
+---
+
+**Версии на языках:**
+- [Русский (Russian)](README.md)
+- [English](README_EN.md)
 
