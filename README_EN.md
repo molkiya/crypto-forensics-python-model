@@ -192,12 +192,26 @@ probabilities = torch.softmax(out, dim=1)  # Get class probabilities
 ## Metrics
 
 The model is evaluated using the following metrics:
-- Precision
-- Recall
-- F1 Score
-- F1 Micro Average
+- **Precision** - the proportion of correctly predicted illicit transactions among all predicted as illicit
+- **Recall** - the proportion of correctly predicted illicit transactions among all actually illicit transactions
+- **F1 Score** - harmonic mean between Precision and Recall
+- **F1 Micro Average** - micro-averaged F1-score across all classes
 
 Results are saved to `output/metrics_robust_base_tx_wallet.csv` and visualized as graphs.
+
+### Metrics Visualization
+
+#### Metrics for illicit class (illegal transactions)
+
+![Model Metrics - Metrics Comparison](Picture%201.png)
+
+The chart shows a comparison of Precision, Recall, F1 Score, and F1 Micro Average metrics for the ChebyshevConvolution model.
+
+#### Aggregated Metrics by Classifier
+
+![Aggregated Model Metrics](Picture%201_2.png)
+
+The chart shows aggregated metrics as stacked bars, where each metric is represented by a separate segment.
 
 ## License
 
